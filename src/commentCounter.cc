@@ -61,7 +61,7 @@ int checkValidIndex(string line, string commentType)
   }
 }
 
-void countCommentDif(string line, Data &info, stack<int> &comments, Lang lang)
+void countCommentDif(string line, Comments &info, stack<int> &comments, Lang lang)
 {
   if (line.length() < 0)
   {
@@ -119,7 +119,7 @@ void countCommentDif(string line, Data &info, stack<int> &comments, Lang lang)
   }
 }
 
-void countCommentSame(string line, Data &info, stack<int> &comments, Lang lang)
+void countCommentSame(string line, Comments &info, stack<int> &comments, Lang lang)
 {
   if (line.length() < 0)
   {
@@ -158,7 +158,7 @@ void countCommentSame(string line, Data &info, stack<int> &comments, Lang lang)
   }
 }
 
-void printResults(Data &info)
+void printResults(Comments &info)
 {
   cout << "Total # of lines: " << info.totalLines << endl;
   cout << "Total # of comment lines: " << info.singleLines + info.multiLines << endl;

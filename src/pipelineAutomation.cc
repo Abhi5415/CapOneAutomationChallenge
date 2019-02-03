@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
   identifyLanguage(lang, inputFile);
   stack<int> comments;
   comments.push(0);
-  Data info;
+  Comments info;
   string line;
 
   if (lang.type == 1)
