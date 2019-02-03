@@ -30,7 +30,7 @@ bool hasPreceeding(string line, int index);
 // @summary: checks for the first valid instance of a string not in quotes
 // @params: line_ line to be checked
 // @params: commentType_ string to check for
-// @return: the starting index of where that string is found
+// @return: the starting index of where that string is found or INT_MAX if not found
 int checkValidIndex(string line, string commentType);
 
 // @summary: updates the number of comments for languages with mutli and single line comments
@@ -56,4 +56,4 @@ void printResults(Comments &info);
 // @params: inputFile_ file name used for its extension
 void identifyLanguage(Lang &lang, const string inputFile);
 
-#endif PROCCESSING
+#endif
