@@ -17,12 +17,33 @@ struct Data
   int todo;
 };
 
-struct language
+struct Lang
 {
   string singleLine;
   string openMulti;
   string closeMulti;
+  int type;
+  // 1 - for different commenting
+  // 2 - for same commenting
 };
+
+bool hasPreceeding(string line, int index)
+{
+  // cout << line;
+  if (index == 0)
+    return false;
+  index--;
+  while (index != 0)
+  {
+    if (line[index] != ' ')
+      // cout << " - true" << endl;
+      return true;
+
+    index--;
+  }
+  // cout << " - false" << endl;
+  return false;
+}
 
 int checkValidIndex(string line, string commentType)
 {
@@ -66,21 +87,16 @@ int checkValidIndex(string line, string commentType)
   }
 }
 
-void countCommentDif(string line, Data &info, stack<int> &comments)
+void countCommentDif(string line, Data &info, stack<int> &comments, Lang lang)
 {
   if (line.length() < 0)
   {
     cerr << "Error: Line length too long." << endl;
     exit(0);
   }
-  // 1 - open multiline comment
-  int indexOfMulti = checkValidIndex(line, "/*");
-  int indexOfSingle = checkValidIndex(line, "//");
-  int indexOfCloseMulti = checkValidIndex(line, "*/");
-
-  // cout << line << endl;
-  // cout << "Multi: " << indexOfMulti << " || Close Multi: " << indexOfCloseMulti << " || Single: " << indexOfSingle << endl
-  //      << endl;
+  int indexOfMulti = checkValidIndex(line, lang.openMulti);
+  int indexOfSingle = checkValidIndex(line, lang.singleLine);
+  int indexOfCloseMulti = checkValidIndex(line, lang.closeMulti);
 
   if (indexOfMulti < indexOfSingle)
   {
@@ -88,6 +104,7 @@ void countCommentDif(string line, Data &info, stack<int> &comments)
     {
       comments.push(1);
       info.blocks++;
+      cout << line << endl;
       if (checkValidIndex(line, "TODO") < INT_MAX)
         info.todo++;
     }
@@ -123,34 +140,14 @@ void countCommentDif(string line, Data &info, stack<int> &comments)
   }
 }
 
-bool hasPreceeding(string line, int index)
-{
-  // cout << line;
-  if (index == 0)
-    return false;
-  index--;
-  while (index != 0)
-  {
-    if (line[index] != ' ')
-      // cout << " - true" << endl;
-      return true;
-
-    index--;
-  }
-  // cout << " - false" << endl;
-  return false;
-}
-
-void countCommentSame(string line, Data &info, stack<int> &comments)
+void countCommentSame(string line, Data &info, stack<int> &comments, Lang lang)
 {
   if (line.length() < 0)
   {
     cerr << "Error: Line length too long." << endl;
     exit(0);
   }
-  // 1 - open multiline comment
-  int index = checkValidIndex(line, "#");
-  // cout << index << endl;
+  int index = checkValidIndex(line, lang.singleLine);
 
   if (index < INT_MAX)
   {
@@ -179,7 +176,6 @@ void countCommentSame(string line, Data &info, stack<int> &comments)
       info.blocks++;
     }
     comments.push(0);
-    // cout << info.singleLines << endl;
   }
 }
 
@@ -193,6 +189,33 @@ void printResults(Data &info)
   cout << "Total # of TODO’s: " << info.todo << endl;
 }
 
+void identifyLanguage(Lang &lang, string inputFile)
+{
+  string extension = inputFile.substr(inputFile.find_last_of(".") + 1);
+
+  if (extension == "py")
+  {
+    lang.singleLine = "#";
+    lang.type = 2;
+  }
+
+  if (extension == "java")
+  {
+    lang.singleLine = "//";
+    lang.openMulti = "/*";
+    lang.closeMulti = "*/";
+    lang.type = 1;
+  }
+
+  if (extension == "js")
+  {
+    lang.singleLine = "//";
+    lang.openMulti = "/*";
+    lang.closeMulti = "*/";
+    lang.type = 1;
+  }
+}
+
 int main(int argc, char *argv[])
 {
 
@@ -202,19 +225,37 @@ int main(int argc, char *argv[])
 
   ifstream file;
   file.open(inputFile);
+  if (!file)
+  {
+    cerr << "Unable to open file " << inputFile << endl;
+    exit(1);
+  }
 
+  // setup
+  Lang lang;
+  identifyLanguage(lang, inputFile);
   stack<int> comments;
   comments.push(0);
   Data info;
-  info.totalLines = 0;
-  info.singleLines = 0;
-
   string line;
-  while (getline(file, line))
+
+  if (lang.type == 1)
   {
-    info.totalLines++;
-    countCommentSame(line, info, comments);
+    while (getline(file, line))
+    {
+      info.totalLines++;
+      countCommentDif(line, info, comments, lang);
+    }
   }
+  else
+  {
+    while (getline(file, line))
+    {
+      info.totalLines++;
+      countCommentSame(line, info, comments, lang);
+    }
+  }
+
   printResults(info);
   file.close();
 }
