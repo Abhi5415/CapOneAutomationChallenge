@@ -30,6 +30,7 @@ Please type Y for YES or N for NO.
 # If user types Y, run the calculate() function
 if calc_again == 'Y':
 calculate() # Inline comment about the code
+
 # If user types N, say good-bye to the user and end the program
 elif calc_again == 'N':
 print('See you later.')

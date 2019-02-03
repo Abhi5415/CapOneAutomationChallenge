@@ -66,7 +66,7 @@ int checkValidIndex(string line, string commentType)
   }
 }
 
-void countComment(string line, Data &info, stack<int> &comments)
+void countCommentDif(string line, Data &info, stack<int> &comments)
 {
   if (line.length() < 0)
   {
@@ -123,6 +123,66 @@ void countComment(string line, Data &info, stack<int> &comments)
   }
 }
 
+bool hasPreceeding(string line, int index)
+{
+  // cout << line;
+  if (index == 0)
+    return false;
+  index--;
+  while (index != 0)
+  {
+    if (line[index] != ' ')
+      // cout << " - true" << endl;
+      return true;
+
+    index--;
+  }
+  // cout << " - false" << endl;
+  return false;
+}
+
+void countCommentSame(string line, Data &info, stack<int> &comments)
+{
+  if (line.length() < 0)
+  {
+    cerr << "Error: Line length too long." << endl;
+    exit(0);
+  }
+  // 1 - open multiline comment
+  int index = checkValidIndex(line, "#");
+  // cout << index << endl;
+
+  if (index < INT_MAX)
+  {
+    if (comments.top() == 1)
+    {
+      comments.push(1);
+      info.multiLines++;
+      return;
+    }
+    else
+    {
+      if (!hasPreceeding(line, index))
+      {
+        comments.push(1);
+      }
+      info.singleLines++;
+    }
+  }
+  else if (comments.top() == 1)
+  {
+    comments.pop();
+    if (comments.top() == 1)
+    {
+      info.multiLines++;
+      info.singleLines--;
+      info.blocks++;
+    }
+    comments.push(0);
+    // cout << info.singleLines << endl;
+  }
+}
+
 void printResults(Data &info)
 {
   cout << "Total # of lines: " << info.totalLines << endl;
@@ -153,7 +213,7 @@ int main(int argc, char *argv[])
   while (getline(file, line))
   {
     info.totalLines++;
-    countComment(line, info, comments);
+    countCommentSame(line, info, comments);
   }
   printResults(info);
   file.close();
